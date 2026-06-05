@@ -1,8 +1,10 @@
 package com.maternidade.maternidadeBackendApp.presentation.controller;
 
+import com.maternidade.maternidadeBackendApp.application.dto.request.EnviarEmailRecuperacaoRequest;
 import com.maternidade.maternidadeBackendApp.application.dto.request.RedefinirSenhaRequest;
 import com.maternidade.maternidadeBackendApp.application.dto.request.VerificarCodigoRequest;
 import com.maternidade.maternidadeBackendApp.application.dto.response.MensagemResponse;
+import com.maternidade.maternidadeBackendApp.application.usecase.EnviarCodigoUseCase;
 import com.maternidade.maternidadeBackendApp.application.usecase.RedefinirSenhaUseCase;
 import com.maternidade.maternidadeBackendApp.application.usecase.VerificarCodigoUseCase;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,8 +22,21 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Recuperação de Senha", description = "Fluxo de redefinição de senha via código de verificação")
 public class EsqueciSenhaController {
 
+    private final EnviarCodigoUseCase enviarCodigoUseCase;
     private final VerificarCodigoUseCase verificarCodigoUseCase;
     private final RedefinirSenhaUseCase redefinirSenhaUseCase;
+
+    @Operation(summary = "Enviar código de verificação por email")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Código enviado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Email não encontrado")
+    })
+    @PostMapping("/enviarCodigo")
+    public ResponseEntity<MensagemResponse> enviarCodigo(
+            @Valid @RequestBody EnviarEmailRecuperacaoRequest request) {
+        enviarCodigoUseCase.execute(request.getTo());
+        return ResponseEntity.ok(MensagemResponse.of("Código enviado para o email."));
+    }
 
     @Operation(summary = "Verificar código de recuperação enviado por email")
     @ApiResponses({
